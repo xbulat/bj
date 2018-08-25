@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 class Player
   @@players = {}
-    
+
   attr_accessor :name, :bank, :cards, :score
 
   def self.all
@@ -19,11 +19,7 @@ class Player
     @@players[name] = self
   end
 
-  def bank=(b)
-    @bank = b
-  end
-
   def cards=(c)
-    self.cards << c
+    @cards << c
   end
 end
