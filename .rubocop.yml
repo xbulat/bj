@@ -1,0 +1,10 @@
+AllCops:
+  UseCache: false
+  DefaultFormatter: progress
+  DisplayStyleGuide: true
+  DisplayCopNames: false
+  TargetRubyVersion: 2.3
+Documentation:
+  Enabled: false
+Metrics/LineLength:
+  Max: 110
