@@ -6,82 +6,92 @@ require_relative 'lib/table.rb'
 require 'io/console'
 
 class Main
-
   attr_reader :user, :diller, :table
 
-  MAIN_MENU =
-    { banner: 'BlackJack Game.',
-      items: {
-        '1': { item: 'Pass turn', cmd: 'pass_turn' },
-        '2': { item: 'Take Card', cmd: 'take_card' },
-        '3': { item: 'Show Cards', cmd: 'show_cards' },
-      } }.freeze
-
-  DEFAULT_ITEMS =
-    { "\u0003": { cmd: 'buy' }, 'nf': { cmd: 'not_found' } }.freeze
-
   def initialize
-  #user_name = gets_user_input('Please enter your name')
-  #user = Player.new(user_name)
-    @user = Player.new('Alex')
+    invite_players
+    start_game
+  end
+
+  def invite_players
+    @user   = Player.new(gets_user_input('Introduce yourself'))
     @diller = Player.new('Diller')
+  end
+
+  def start_game
     @table = Table.new(Player.all)
   end
 
+  def continue_game
+    if gets_user_input('Would you like to continue game? (Y/N)') =~ /y/i
+      table.flush_cards
+      start_game
+      welcome
+    else
+      buy
+    end
+  end
+
   def welcome
-    display_menu(MAIN_MENU)
+    header_greeting('Casion 777. BlackJack Game')
+    puts cards_status
+    puts game_status
+    blank_line
+    puts '1) Take Card'
+    puts '2) Take Pass'
+    puts '3) Showdown'
+    table.game_complete? ? show_cards : loop { menu_selector }
   end
 
   def game_status
-    format('You bank: %d, Score: %d, GameBank: %d', user.bank.money, user.score, table.bank.money)
+    "Money: #{user.bank.money}$, Score: #{user.score}, GameBank: #{table.bank.money}$"
   end
 
-  def cards_status(hide = true)
-    "Your cards: #{table.player_cards(user)}, Diller cards: #{table.player_cards(diller, hide)}"
+  def cards_status(hide = true) 
+    puts '------------------- TABLE ----------------------'
+    puts "You: #{table.player_cards(user)} |  Diller: #{table.player_cards(diller, hide)}"
+    puts '------------------------------------------------'
   end
 
   def game_result
-
+    table.players.map { |w| puts "Name: #{w.name}, Score: #{w.score}" }
+    if table.winner.any?
+      puts "The Winner of the game: #{table.winner.map(&:name).join(', ')}"
+      puts "Winner is getting #{table.bank.money / table.winner.size}$"
+      puts 'Congratulation!'
+    else
+      puts 'No winners, our Casino will get all money.'
+    end
   end
 
   def show_cards
-    header_greeting("Show cards. Game results.")
+    header_greeting('Show cards and Results')
     puts cards_status(false)
     puts game_status
     puts game_result
+    table.return_bets(table.winner)
+    blank_line
+    table.enought_money? ? continue_game : buy
   end
 
   private
 
-  def display_menu(items)
-    header_greeting(items[:banner])
-    puts cards_status
-    blank_line
-    items[:items].each { |k, v| puts "#{k}) #{v[:item]}" }
-    blank_line
-    puts game_status
-    blank_line
-    loop { menu_selector(items) }
-  end
-
-  def menu_selector(items)
-    c = read_char
-    items = DEFAULT_ITEMS.merge(items[:items])
-    cmd = items.fetch(c.to_sym).fetch(:cmd)
+  def menu_selector
+    cmd = read_char
     case cmd
-    when 'take_card'
-      table.method(cmd).call(user)
-      table.update_score
-      clear
+    when '1'
+      table.take_card(user)
+      table.pass_turn(diller)
       welcome
-    when 'pass_turn'
-      table.method(cmd).call(diller)
-      table.update_score
-      clear
+    when '2'
+      table.pass_turn(diller)
       welcome
-    when 'show_cards'
-      clear
-      method(cmd).call
+    when '3'
+      show_cards
+    when "\u0003"
+      buy
+    else
+      not_found
     end
   end
 
@@ -103,15 +113,11 @@ class Main
         nil
       end
     end
-    ensure
-      STDIN.echo = true
-      STDIN.cooked!
+  ensure
+    STDIN.echo = true
+    STDIN.cooked!
 
     return input.to_s
-  end
-
-  def not_found
-    puts 'CMD not found'
   end
 
   def clear
@@ -138,8 +144,13 @@ class Main
     blank_line
   end
 
-  def exit_greeting
-    puts 'CTRL+C to Exit'
+  def not_found
+    puts 'command not found'
+  end
+
+  def buy
+    header_greeting("Good luck! Your prize: #{user.bank.money}")
+    exit 0
   end
 end
 
