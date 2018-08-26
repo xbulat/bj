@@ -66,7 +66,7 @@ class Table
 
   def card_value(cards, &block)
     values = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
-               '10': 10, K: 10, D: 10, J: 10, T: nil }.freeze
+               '10': 10, K: 10, Q: 10, J: 10, A: nil }.freeze
 
     cards.each { |c| yield(values.fetch(c.match(/\w+/)[0].to_sym)) }
   end
@@ -74,11 +74,11 @@ class Table
   def count_score(cards, values = [])
     card_value(cards) { |card| values << card }
 
-    if values.include?(nil) && values.size == 1 # T
+    if values.include?(nil) && values.size == 1 # A
       values.compact! << 11
-    elsif values.include?(nil) && values.compact.size.zero? # T & T
+    elsif values.include?(nil) && values.compact.size.zero? # A & A
       values.compact! << 22
-    elsif values.include?(nil) && values.compact.size.nonzero? # T & any
+    elsif values.include?(nil) && values.compact.size.nonzero? # A & any
       values.compact.inject(&:+) >= 11 ? values.compact! << 1 : values.compact! << 11
     end
     values.inject(&:+)
