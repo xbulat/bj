@@ -3,9 +3,11 @@ module Menu
     cmd = read_char
     case cmd
     when '1'
-      user_turn
+      table.user_turn
+      welcome
     when '2'
-      diller_turn
+      table.diller_turn
+      welcome
     when '3'
       show_cards
     when "\u0003"
@@ -53,8 +55,8 @@ module Menu
     puts 'command not found'
   end
 
-  def buy
-    header_greeting("Good luck! Your prize: #{user.bank.money}")
+  def bye
+    header_greeting("Good luck! Your prize: #{table.user.bank.money}")
     exit 0
   end
 end

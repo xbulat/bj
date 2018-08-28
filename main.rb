@@ -7,7 +7,7 @@ require_relative 'lib/menu.rb'
 
 class Main
   include Menu
-  attr_reader :user, :diller, :table
+  attr_reader :table
 
   def initialize
     invite_players
@@ -20,16 +20,15 @@ class Main
   end
 
   def start_game
-    @table = Table.new(Player.all)
+    @table = Table.new(@user, @diller)
   end
 
   def continue_game
     if gets_user_input('Would you like to continue game? (Y/N)') =~ /y/i
-      table.flush_cards
       start_game
       welcome
     else
-      buy
+      bye
     end
   end
 
@@ -44,23 +43,13 @@ class Main
     table.game_complete? ? show_cards : loop { menu_selector }
   end
 
-  def user_turn
-    table.take_card(user)
-    diller_turn
-  end
-
-  def diller_turn
-    table.pass_turn(diller)
-    welcome
-  end
-
   def game_status
-    "Money: #{user.bank.money}$, Score: #{user.score}, GameBank: #{table.bank.money}$"
+    "Money: #{table.user.bank.money}$, Score: #{table.user.score}, GameBank: #{table.bank.money}$"
   end
 
   def cards_status(hide = true)
     puts '------------------- TABLE ----------------------'
-    puts "You: #{table.player_cards(user)} |  Diller: #{table.player_cards(diller, hide)}"
+    puts "You: #{table.user_cards} |  Diller: #{table.diller_cards(hide)}"
     puts '------------------------------------------------'
   end
 
@@ -80,9 +69,9 @@ class Main
     puts cards_status(false)
     puts game_status
     puts game_result
-    table.return_bets(table.winner)
+    table.return_bets
     blank_line
-    table.enought_money? ? continue_game : buy
+    table.enought_money? ? continue_game : bye
   end
 end
 

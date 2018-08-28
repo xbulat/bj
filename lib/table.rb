@@ -1,19 +1,62 @@
 # frozen_string_literal: true
 class Table
-  attr_accessor :cards, :players, :bank
+  attr_accessor :cards, :bank
+  attr_reader :user, :diller
 
   BET = 10
   BANK = 100
 
-  def initialize(players)
-    @players = players
+  def initialize(user, diller)
+    @user = user
+    @diller = diller
     @cards = CardDeck.new
     @bank = Bank.new
+    flush_cards
     ensure_game
   end
 
   def enought_money?
     players.map { |player| player.bank.money >= BET }.all?
+  end
+
+  def game_complete?
+    players.map(&:cards).flatten.size == 6
+  end
+
+  def user_turn
+    take_card(user)
+    diller_turn
+  end
+
+  def diller_turn
+    take_card(diller) if diller.score < 17
+  end
+
+  def user_cards
+    player_cards(user)
+  end
+
+  def diller_cards(hide)
+    player_cards(diller, hide)
+  end
+
+  def winner
+    score = players.keep_if { |player| player.score <= 21 }.map(&:score)
+    players.reject { |player| player.score < score.max }
+  end
+
+  def return_bets
+    winner.each { |player| player.bank.add_money(bank.money / winner.size) } if winner.any?
+  end
+
+  def players
+    @players ||= Player.all
+  end
+
+  private
+
+  def player_cards(player, hide = false)
+    hide ? Array.new(player.cards.size, '🂠').join(' ') : player.cards.join(' ')
   end
 
   def take_card(player)
@@ -25,32 +68,9 @@ class Table
     player.bank.take_money(BET)
   end
 
-  def pass_turn(player)
-    take_card(player) if player.score < 17
-  end
-
-  def player_cards(player, hide = false)
-    hide ? Array.new(player.cards.size, '🂠').join(' ') : player.cards.join(' ')
-  end
-
-  def game_complete?
-    players.map(&:cards).flatten.size == 6
-  end
-
-  def winner
-    score = players.keep_if { |player| player.score <= 21 }.map(&:score)
-    players.keep_if { |player| player.score >= score.max }
-  end
-
-  def return_bets(winner)
-    winner.each { |player| player.bank.add_money(bank.money / winner.size) } if winner.any?
-  end
-
   def flush_cards
-    Player.all.map { |player| player.instance_variable_set(:@cards, []) }
+    players.map { |player| player.instance_variable_set(:@cards, []) }
   end
-
-  private
 
   def update_score(player)
     player.score = count_score(player.cards)
