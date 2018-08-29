@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 require_relative 'lib/bank.rb'
-require_relative 'lib/cards.rb'
+require_relative 'lib/card_deck.rb'
 require_relative 'lib/player.rb'
 require_relative 'lib/table.rb'
-require 'io/console'
+require_relative 'lib/menu.rb'
 
 class Main
-  attr_reader :user, :diller, :table
+  include Menu
+  attr_reader :table
 
   def initialize
     invite_players
@@ -15,20 +16,19 @@ class Main
 
   def invite_players
     @user   = Player.new(gets_user_input('Introduce yourself'))
-    @diller = Player.new('Diller')
+    @dealer = Player.new('dealer')
   end
 
   def start_game
-    @table = Table.new(Player.all)
+    @table = Table.new(@user, @dealer)
   end
 
   def continue_game
     if gets_user_input('Would you like to continue game? (Y/N)') =~ /y/i
-      table.flush_cards
       start_game
       welcome
     else
-      buy
+      bye
     end
   end
 
@@ -44,12 +44,12 @@ class Main
   end
 
   def game_status
-    "Money: #{user.bank.money}$, Score: #{user.score}, GameBank: #{table.bank.money}$"
+    "Money: #{table.user.bank.money}$, Score: #{table.user.score}, GameBank: #{table.bank.money}$"
   end
 
-  def cards_status(hide = true) 
+  def cards_status
     puts '------------------- TABLE ----------------------'
-    puts "You: #{table.player_cards(user)} |  Diller: #{table.player_cards(diller, hide)}"
+    puts "       You: #{table.user_cards}   |  Dealer: #{table.dealer_cards}"
     puts '------------------------------------------------'
   end
 
@@ -66,91 +66,12 @@ class Main
 
   def show_cards
     header_greeting('Show cards and Results')
-    puts cards_status(false)
+    puts cards_status
     puts game_status
+    blank_line
     puts game_result
-    table.return_bets(table.winner)
     blank_line
-    table.enought_money? ? continue_game : buy
-  end
-
-  private
-
-  def menu_selector
-    cmd = read_char
-    case cmd
-    when '1'
-      table.take_card(user)
-      table.pass_turn(diller)
-      welcome
-    when '2'
-      table.pass_turn(diller)
-      welcome
-    when '3'
-      show_cards
-    when "\u0003"
-      buy
-    else
-      not_found
-    end
-  end
-
-  def read_char
-    STDIN.echo = false
-    STDIN.raw!
-
-    input = STDIN.getc.chr
-    if input == "\e"
-      begin
-        input << STDIN.read_nonblock(3)
-      rescue
-        nil
-      end
-
-      begin
-        input << STDIN.read_nonblock(2)
-      rescue
-        nil
-      end
-    end
-  ensure
-    STDIN.echo = true
-    STDIN.cooked!
-
-    return input.to_s
-  end
-
-  def clear
-    system 'clear'
-  end
-
-  def blank_line
-    puts
-  end
-
-  def gets_user_input(greeting)
-    begin
-      puts greeting
-      input = gets.chomp!
-    end while input.empty?
-    input
-  end
-
-  def header_greeting(string)
-    clear
-    puts '================================================'
-    puts string.to_s
-    puts '================================================'
-    blank_line
-  end
-
-  def not_found
-    puts 'command not found'
-  end
-
-  def buy
-    header_greeting("Good luck! Your prize: #{user.bank.money}")
-    exit 0
+    table.enought_money? ? continue_game : bye
   end
 end
 
