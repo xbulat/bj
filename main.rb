@@ -16,11 +16,11 @@ class Main
 
   def invite_players
     @user   = Player.new(gets_user_input('Introduce yourself'))
-    @diller = Player.new('Diller')
+    @dealer = Player.new('dealer')
   end
 
   def start_game
-    @table = Table.new(@user, @diller)
+    @table = Table.new(@user, @dealer)
   end
 
   def continue_game
@@ -47,9 +47,9 @@ class Main
     "Money: #{table.user.bank.money}$, Score: #{table.user.score}, GameBank: #{table.bank.money}$"
   end
 
-  def cards_status(hide = true)
+  def cards_status
     puts '------------------- TABLE ----------------------'
-    puts "You: #{table.user_cards} |  Diller: #{table.diller_cards(hide)}"
+    puts "       You: #{table.user_cards}   |  Dealer: #{table.dealer_cards}"
     puts '------------------------------------------------'
   end
 
@@ -66,10 +66,10 @@ class Main
 
   def show_cards
     header_greeting('Show cards and Results')
-    puts cards_status(false)
+    puts cards_status
     puts game_status
+    blank_line
     puts game_result
-    table.return_bets
     blank_line
     table.enought_money? ? continue_game : bye
   end

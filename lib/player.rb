@@ -13,7 +13,7 @@ class Player
   end
 
   def initialize(name)
-    @name = name
+    @name = name.capitalize
     @cards = []
     @score = 0
     @@players[name] = self

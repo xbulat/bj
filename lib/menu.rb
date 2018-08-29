@@ -6,12 +6,13 @@ module Menu
       table.user_turn
       welcome
     when '2'
-      table.diller_turn
+      table.dealer_turn
       welcome
     when '3'
+      table.game_over!
       show_cards
     when "\u0003"
-      buy
+      bye
     else
       not_found
     end

@@ -1,16 +1,17 @@
 # frozen_string_literal: true
 class Table
-  attr_accessor :cards, :bank
-  attr_reader :user, :diller
+  attr_reader :user, :dealer, :cards, :bank
+  attr_accessor :game_over
 
   BET = 10
   BANK = 100
 
-  def initialize(user, diller)
-    @user = user
-    @diller = diller
-    @cards = CardDeck.new
-    @bank = Bank.new
+  def initialize(user, dealer)
+    @user   = user
+    @dealer = dealer
+    @cards  = CardDeck.new
+    @bank   = Bank.new
+    @game_over = false
     flush_cards
     ensure_game
   end
@@ -23,21 +24,27 @@ class Table
     players.map(&:cards).flatten.size == 6
   end
 
-  def user_turn
-    take_card(user)
-    diller_turn
+  def game_over!
+    self.game_over = true
+    return_bets
   end
 
-  def diller_turn
-    take_card(diller) if diller.score < 17
+  def user_turn
+    take_card(user)
+    game_complete? ? game_over! : dealer_turn
+  end
+
+  def dealer_turn
+    take_card(dealer) if dealer.score < 17
+    game_over! if game_complete?
   end
 
   def user_cards
     player_cards(user)
   end
 
-  def diller_cards(hide)
-    player_cards(diller, hide)
+  def dealer_cards
+    game_over ? player_cards(dealer) : player_cards(dealer, 'hide')
   end
 
   def winner
@@ -45,15 +52,17 @@ class Table
     players.reject { |player| player.score < score.max }
   end
 
-  def return_bets
-    winner.each { |player| player.bank.add_money(bank.money / winner.size) } if winner.any?
-  end
-
   def players
     @players ||= Player.all
   end
 
   private
+
+  attr_writer :cards, :bank
+
+  def return_bets
+    winner.each { |player| player.bank.add_money(bank.money / winner.size) } if winner.any?
+  end
 
   def player_cards(player, hide = false)
     hide ? Array.new(player.cards.size, '🂠').join(' ') : player.cards.join(' ')
