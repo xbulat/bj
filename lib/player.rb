@@ -2,7 +2,7 @@
 class Player
   @@players = {}
 
-  attr_accessor :name, :bank, :cards, :score
+  attr_accessor :name, :bank, :hand
 
   def self.all
     @@players.values
@@ -14,12 +14,7 @@ class Player
 
   def initialize(name)
     @name = name.capitalize
-    @cards = []
-    @score = 0
+    @hand = Hand.new
     @@players[name] = self
-  end
-
-  def cards=(c)
-    @cards << c
   end
 end

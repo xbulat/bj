@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require_relative 'lib/bank.rb'
 require_relative 'lib/card_deck.rb'
+require_relative 'lib/card.rb'
+require_relative 'lib/hand.rb'
 require_relative 'lib/player.rb'
 require_relative 'lib/table.rb'
 require_relative 'lib/menu.rb'
@@ -44,7 +46,7 @@ class Main
   end
 
   def game_status
-    "Money: #{table.user.bank.money}$, Score: #{table.user.score}, GameBank: #{table.bank.money}$"
+    "Money: #{table.user.bank.money}$, Score: #{table.user.hand.score}, GameStake: #{table.bank.money}$"
   end
 
   def cards_status
@@ -54,10 +56,10 @@ class Main
   end
 
   def game_result
-    table.players.map { |w| puts "Name: #{w.name}, Score: #{w.score}" }
-    if table.winner.any?
-      puts "The Winner of the game: #{table.winner.map(&:name).join(', ')}"
-      puts "Winner is getting #{table.bank.money / table.winner.size}$"
+    table.players.map { |w| puts "Name: #{w.name}, Score: #{w.hand.score}" }
+    if table.winners.any?
+      puts "The Winner of the game: #{table.winners.map(&:name).join(', ')}"
+      puts "Winner is getting #{table.bank.money / table.winners.size}$"
       puts 'Congratulation!'
     else
       puts 'No winners, our Casino will get all money.'
