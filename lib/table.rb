@@ -49,18 +49,6 @@ class Table
     dealer.hand.show_cards
   end
 
-  def valid_scores
-    lambda { |player| player.hand.score if player.hand.score < 22 }
-  end
-
-  def select_winner
-    lambda { |player| player.hand.score < 22 && player.hand.score >= max_score }
-  end
-
-  def max_score
-    players.collect(&valid_scores).compact.max
-  end
-
   def winners
     max_score.nil? ? [] : players.select(&select_winner)
   end
@@ -72,6 +60,18 @@ class Table
   private
 
   attr_writer :cards, :bank
+
+  def max_score
+    players.collect(&valid_scores).compact.max
+  end
+
+  def valid_scores
+    lambda { |player| player.hand.score if player.hand.score < 22 }
+  end
+
+  def select_winner
+    lambda { |player| player.hand.score < 22 && player.hand.score >= max_score }
+  end
 
   def return_bets
     winners.each { |player| player.bank.add_money(bank.money / winners.size) } if winners.any?
