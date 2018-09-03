@@ -15,7 +15,7 @@ class Hand
   end
 
   def show_cards
-    hide ? [].fill('🂠', 0..(cards.size - 1)).join(' ') : cards.join(' ')
+    hide ? [].fill('🂠', 0..(cards.size - 1)).join(' ') : cards.map(&:suit).join(' ')
   end
 
   def unhide_cards
@@ -24,12 +24,8 @@ class Hand
 
   private
 
-  def card
-    @card ||= Card.new
-  end
-
   def update_score(values = [])
-    card.value(cards) { |card| values << card }
+    cards.each { |card| values << card.value }
 
     if values.include?(nil) && values.size == 1 # A
       values.compact! << 11
