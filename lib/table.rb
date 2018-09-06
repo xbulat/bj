@@ -6,9 +6,9 @@ class Table
   BET = 10
   BANK = 100
 
-  def initialize(user, dealer)
-    @user   = user
-    @dealer = dealer
+  def initialize(username)
+    @user   = Player.new(username)
+    @dealer = Player.new('dealer')
     @card_deck = CardDeck.new
     @bank = Bank.new
     @game_over = false

@@ -9,20 +9,15 @@ require_relative 'lib/menu.rb'
 
 class Main
   include Menu
-  attr_reader :table
+  attr_reader :table, :username
 
   def initialize
-    invite_players
+    @username = gets_user_input('Introduce yourself')
     start_game
   end
 
-  def invite_players
-    @user   = Player.new(gets_user_input('Introduce yourself'))
-    @dealer = Player.new('dealer')
-  end
-
   def start_game
-    @table = Table.new(@user, @dealer)
+    @table = Table.new(username)
   end
 
   def main_menu
