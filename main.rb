@@ -25,56 +25,30 @@ class Main
     @table = Table.new(@user, @dealer)
   end
 
-  def continue_game
-    if gets_user_input('Would you like to continue game? (Y/N)') =~ /y/i
-      start_game
-      welcome
-    else
-      bye
-    end
+  def main_menu
+    menu_header('Casion 777. BlackJack Game')
+    game_status
+
+    table.game_complete? ? show_game_results : loop { menu_selector }
   end
 
-  def welcome
-    header_greeting('Casion 777. BlackJack Game')
-    puts cards_status
-    puts game_status
-    blank_line
-    puts '1) Take Card'
-    puts '2) Take Pass'
-    puts '3) Showdown'
-    table.game_complete? ? show_cards : loop { menu_selector }
+  def show_game_results
+    menu_header('Show cards and Results')
+    game_status
+    game_results
+
+    continue_or_exit?
+  end
+
+  def game_results
+    show_players_score
+    show_winners
   end
 
   def game_status
-    "Money: #{table.user.bank.money}$, Score: #{table.user.hand.score}, GameStake: #{table.bank.money}$"
-  end
-
-  def cards_status
-    puts '------------------- TABLE ----------------------'
-    puts "       You: #{table.user_cards}   |  Dealer: #{table.dealer_cards}"
-    puts '------------------------------------------------'
-  end
-
-  def game_result
-    table.players.map { |w| puts "Name: #{w.name}, Score: #{w.hand.score}" }
-    if table.winners.any?
-      puts "The Winner of the game: #{table.winners.map(&:name).join(', ')}"
-      puts "Winner is getting #{table.bank.money / table.winners.size}$"
-      puts 'Congratulation!'
-    else
-      puts 'No winners, our Casino will get all money.'
-    end
-  end
-
-  def show_cards
-    header_greeting('Show cards and Results')
-    puts cards_status
-    puts game_status
-    blank_line
-    puts game_result
-    blank_line
-    table.enought_money? ? continue_game : bye
+    show_cards_status
+    show_game_status
   end
 end
 
-Main.new.welcome
+Main.new.main_menu
