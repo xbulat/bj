@@ -4,16 +4,12 @@ class Table
   attr_accessor :game_over
 
   BET = 10
-  BANK = 100
-
   def initialize(username)
     @user   = Player.new(username)
     @dealer = Player.new('dealer')
-    @card_deck = CardDeck.new
     @bank = Bank.new
-    @game_over = false
-    flush_cards
-    ensure_game
+    create_card_deck
+    game
   end
 
   def enought_money?
@@ -28,6 +24,14 @@ class Table
     self.game_over = true
     dealer.hand.unhide_cards
     return_bets
+    flush_stack
+  end
+
+  def game
+    self.game_over = false
+    flush_cards
+    create_card_deck
+    ensure_game
   end
 
   def user_turn
@@ -61,16 +65,20 @@ class Table
 
   attr_writer :cards, :bank
 
+  def create_card_deck
+    @card_deck = CardDeck.new
+  end
+
   def max_score
     players.collect(&valid_scores).compact.max
   end
 
   def valid_scores
-    lambda { |player| player.hand.score if player.hand.score < 22 }
+    ->(player) { player.hand.score if player.hand.score < 22 }
   end
 
   def select_winner
-    lambda { |player| player.hand.score < 22 && player.hand.score >= max_score }
+    ->(player) { player.hand.score < 22 && player.hand.score >= max_score }
   end
 
   def return_bets
@@ -85,11 +93,15 @@ class Table
     players.map { |player| player.instance_variable_set(:@hand, Hand.new) }
   end
 
+  def flush_stack
+    self.bank.money = 0
+  end
+
   def ensure_game
     players.each do |player|
       2.times { player.hand.cards = card_deck.give_card }
-      player.bank = Bank.new(BANK) if player.bank.nil?
-      bank.add_money(BET) if make_bet(player).positive?
+      bank.add_money(BET)
+      make_bet(player)
     end
   end
 end

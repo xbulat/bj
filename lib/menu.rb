@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Menu
   def continue_game_menu
     if gets_user_input('Would you like to continue game? (Y/N)') =~ /y/i
-      start_game
+      table.game
       main_menu
     else
       bye
@@ -13,14 +15,13 @@ module Menu
   end
 
   def show_game_status
-    puts "Money: #{table.user.bank.money}$, Score: #{table.user.hand.score}, GameStake: #{table.bank.money}$"
+    puts "Money: #{table.user.bank.money}$, Score: #{table.user.hand.score}, GameStack: #{table.bank.money}$"
     blank_line
   end
 
   def show_winners
     if table.winners.any?
       puts "The Winner of the game: #{table.winners.map(&:name).join(', ')}"
-      puts "Winner is getting #{table.bank.money / table.winners.size}$"
       puts 'Congratulation!'
     else
       puts 'No winners, our Casino will get all money.'
@@ -59,6 +60,8 @@ module Menu
       show_game_results
     when "\u0003"
       bye
+    when "p"
+      pry.binding
     else
       not_found
     end
