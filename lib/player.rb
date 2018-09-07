@@ -2,6 +2,8 @@
 class Player
   @@players = {}
 
+  BANK = 100
+
   attr_accessor :name, :bank, :hand
 
   def self.all
@@ -15,6 +17,7 @@ class Player
   def initialize(name)
     @name = name.capitalize
     @hand = Hand.new
+    @bank = Bank.new(BANK)
     @@players[name] = self
   end
 end
